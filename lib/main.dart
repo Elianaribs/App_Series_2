@@ -20,6 +20,7 @@ void main() {
 }
 
 final GoRouter _router = GoRouter(
+  initialLocation: "/search",
   routes: [
     ShellRoute(
       builder: (context, state, child) => BaseScreen(child: child),

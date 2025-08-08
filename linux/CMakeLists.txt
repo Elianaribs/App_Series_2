@@ -1,5 +1,10 @@
 # Project-level configuration.
 cmake_minimum_required(VERSION 3.13)
+
+# The compiler must be set before calling project()
+if(NOT DEFINED CMAKE_CXX_COMPILER)
+  set(CMAKE_CXX_COMPILER "/usr/bin/g++" CACHE FILEPATH "C++ compiler" FORCE)
+endif()
 project(runner LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change

@@ -44,6 +44,14 @@ class TvShowModel extends ChangeNotifier {
     }
   }
 
+  Future<TvShow> getTvShowById(int id) async {
+    try {
+      return await _tvShowService.fetchTvShowById(id);
+    } catch (e) {
+      throw Exception('Falha ao carregar série: ${e.toString()}');
+    }
+  }
+
   void addTvShow(TvShow tvShow, BuildContext context) {
     tvShows.add(tvShow);
     ScaffoldMessenger.of(context).showSnackBar(

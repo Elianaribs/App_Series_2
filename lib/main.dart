@@ -6,6 +6,7 @@ import 'package:app3_series_api/tv_show_search.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:app3_series_api/fav_tv_show_screen.dart';
 
 void main() {
   runApp(
@@ -25,7 +26,14 @@ final GoRouter _router = GoRouter(
     ShellRoute(
       builder: (context, state, child) => BaseScreen(child: child),
       routes: [
-        GoRoute(path: '/', builder: (context, state) => TvShowScreen()),
+        GoRoute(path: '/', builder: (context, state) => FavTvShowScreen()),
+        GoRoute(
+          path: '/tvshow/:id',
+          builder: (context, state) {
+            final id = int.parse(state.pathParameters['id']!);
+            return TvShowScreen(id: id);
+          },
+        ),
         GoRoute(
           path: '/search',
           builder: (context, state) => TvShowSearchScreen(),

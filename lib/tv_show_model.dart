@@ -28,14 +28,84 @@ class TvShow {
       summary: json['summary'] ?? 'Sem resumo disponível',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'imageUrl': imageUrl,
+      'name': name,
+      'webChannel': webChannel,
+      'rating': rating,
+      'summary': summary,
+    };
+  }
 }
 
 class TvShowModel extends ChangeNotifier {
-  final TvShowService _tvShowService = TvShowService();
+  late final TvShowService _tvShowService;
 
-  final List<TvShow> _tvShows = [];
+  TvShowModel() {
+    _tvShowService = TvShowService();
+    initialize();
+  }
+
+  //Estado das séries favoritas
+  List<TvShow> _tvShows = [];
+  bool _isLoading = false;
+  String? _errorMessage;
+
   List<TvShow> get tvShows => _tvShows;
+  bool get isLoading => _isLoading;
+  String? get errorMessage => _errorMessage;
+  bool get hasFavorites => _tvShows.isNotEmpty;
 
+  //BD
+  Future<void> initialize() async {
+    await load();
+  }
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+    notifyListeners();
+  }
+
+  void _setError(String? error) {
+    _errorMessage = error;
+    notifyListeners();
+  }
+
+  Future<void> load() async {
+    try {
+      _setLoading(true);
+      _setError(null);
+      _tvShows = await _tvShowService.getAll();
+    } catch (e) {
+      _setError('Falha ao carregar favoritos ${e.toString()}');
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<void> addToFavorites(TvShow tvShow) async {
+    await _tvShowService.insert(tvShow);
+    notifyListeners();
+  }
+
+  Future<void> removeFromFavorites(TvShow tvShow) async {
+    await _tvShowService.delete(tvShow.id);
+    notifyListeners();
+  }
+
+  Future<bool> isFavorite(TvShow tvShow) async {
+    try {
+      return await _tvShowService.isFavorite(tvShow);
+    } catch (e) {
+      _setError('Erro ao verificar se a série é favorita: ${e.toString()}');
+      return false;
+    }
+  }
+
+  //API
   Future<List<TvShow>> searchTvShows(String query) async {
     try {
       return await _tvShowService.fetchTvShows(query);

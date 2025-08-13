@@ -12,23 +12,90 @@ class FavTvShowScreen extends StatefulWidget {
 
 class _FavTvShowScreenState extends State<FavTvShowScreen> {
   @override
-  Widget build(BuildContext context) {
-    var tvShows = context.watch<TvShowModel>().tvShows;
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<TvShowModel>().initialize();
+    });
+  }
 
-    return Container(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Text(
-            tvShows.isEmpty
-                ? 'Nenhuma série adicionada aos favoritos'
-                : 'Favoritas',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TvShowModel>(
+      builder: (context, viewModel, child) {
+        if (viewModel.isLoading) {
+          return Center(
+            child: SizedBox(
+              height: 96,
+              width: 96,
+              child: CircularProgressIndicator(strokeWidth: 12),
+            ),
+          );
+        }
+
+        if (viewModel.errorMessage != null) {
+          return Center(
+            child: Container(
+              padding: EdgeInsets.all(32),
+              child: Column(
+                spacing: 32,
+                children: [
+                  Text(
+                    'Erro: ${viewModel.errorMessage}',
+                    style: TextStyle(fontSize: 24),
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      viewModel.load();
+                    },
+                    child: Text('TENTAR NOVAMENTE'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        return Container(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            children: [
+              if (viewModel.hasFavorites) ...[
+                const SizedBox(height: 8),
+                Text(
+                  '${viewModel.tvShows.length} séries favoritas',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+              const SizedBox(height: 16),
+              Expanded(
+                child: viewModel.hasFavorites
+                    ? TvShowGrid(tvShows: viewModel.tvShows)
+                    : Center(
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 64),
+                            Icon(
+                              Icons.favorite,
+                              size: 96,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                            const SizedBox(height: 32),
+                            Text(
+                              'Adicione suas séries favoritas!',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          Expanded(child: TvShowGrid(tvShows: tvShows)),
-        ],
-      ),
+        );
+      },
     );
   }
 }
